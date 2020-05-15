@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+    <style>
+        button {
+            width: 100%;
+            font-size:20px;
+            box-sizing: border-box;
+            border-color: #00308F;
+            border-radius: 4px;
+        }
+    </style>
+    <body>
+        <h1> Calculator</h1>
+        <table>
+            <tr>
+                <h3 id="result">0</h3>
+            </tr>
+            <tr>
+                <td id="%" ><button onclick ="percent()">%</button></td>
+                <td id="CE"><button onclick = "CE()">CE</button></td>
+                <td id="C"><button onclick = "C()">C</button></td>
+                <td id="Delete"><button onclick="Delete()">X</button></td>
+            </tr>
+            <tr>
+                <td id="1/x"><button onclick="oneOverX()">1/x</button></td>
+                <td id="x^2"><button onclick="xSquare()">x^2</button></td>
+                <td id="sqrt(x)"><button onclick="sqrtX()">sqrt(x)</button></td>
+                <td id="/"><button onclick="getOperator('/')">/</button></td>
+            </tr>
+            <tr>
+                <td id ="7"><button onclick="num('7')">7</button></td>
+                <td id ="8"><button onclick="num('8')">8</button></td>
+                <td id ="9"><button onclick="num('9')">9</button></td>
+                <td id ="*"><button onclick="getOperator('*')">*</button></td>
+            </tr>
+            <tr>
+                <td id ="4"><button onclick="num('4')">4</button></td>
+                <td id ="5"><button onclick="num('5')">5</button></td>
+                <td id ="6"><button onclick="num('6')">6</button></td>
+                <td id ="-"><button onclick="getOperator('-')">-</button></td>
+            </tr>
+            <tr>
+                <td id ="1"><button onclick="num('1')">1</button></td>
+                <td id ="2"><button onclick="num('2')">2</button></td>
+                <td id ="3"><button onclick="num('3')">3</button></td>
+                <td id ="+"><button onclick="getOperator('+')">+</button></td>
+            </tr>
+            <tr>
+                <td id ="+/-"><button onclick="sign()">+/-</button></td>
+                <td id ="0"><button onclick="num('0')">0</button></td>
+                <td id ="."><button onclick="decimalPoint()">.</button></td>
+                <td id ="getResult"><button onclick="getResult()">=</button></td>
+            </tr>
+        </table>
+    </body>
+    <script>
+        let firstHalf = null;
+        let operator = null;
+        let secondHalf = null;
+        let operationSoFar = null;
+        let switcher = false; //boolean value to alert num to start getting new value instead of appending to old ones
+        
+        function percent(){
+            //TODO: implement percent
+        }
+
+        function updateOperationSoFar(){
+            operationSoFar = "Current Operations: " + firstHalf + " " + operator + " " + secondHalf;
+        }
+        function num(input){
+            const x = document.getElementById("result").innerText;
+            if(switcher){
+                document.getElementById("result").innerText = input;
+                switcher = false;
+                return;
+            }
+            if(x.length == 1 && x == 0){
+                document.getElementById("result").innerText = input;
+            }
+            else
+                document.getElementById("result").innerText += input;
+        }
+        function oneOverX(){
+            document.getElementById("result").innerText = 1/document.getElementById("result").innerText;
+        }
+        function Delete(){
+            const x = document.getElementById("result").innerText;
+            if(firstHalf || secondHalf || operator){
+                firstHalf = null;
+                operator = null;
+                secondHalf = null;
+                return;
+            }
+            if(x=="Invalid Input"){
+                C();
+                return;
+            }
+            if(x==0 && x.length == 1){
+                return;
+            }
+            if(x.length == 1){
+                document.getElementById("result").innerText = 0;
+            }
+            else{
+                document.getElementById("result").innerText = x.slice(0,x.length-1);
+            }
+        }
+        function xSquare(){
+            const x = document.getElementById("result").innerText;
+            document.getElementById("result").innerText = x**2;
+        }
+        function sqrtX(){
+            const x = document.getElementById("result").innerText;
+            if(x<0){
+                document.getElementById("result").innerText = "Invalid Input";
+                return;
+            }
+            document.getElementById("result").innerText = Math.sqrt(x);
+        }
+        function C(){
+            document.getElementById("result").innerText = 0;
+            firstHalf = null;
+            operator = null;
+            secondHalf = null;
+        }
+        function CE(){
+            document.getElementById("result").innerText = 0;
+            firstHalf = null;
+        }
+        function decimalPoint(){
+            const x = document.getElementById("result").innerText;
+            if(!x.includes('.'))
+                document.getElementById("result").innerText += '.';
+        }
+        function sign(){
+            const x = document.getElementById("result").innerText;
+            if(x.length == 1 && x == 0){
+                return;
+            }
+            if(!x.includes('-'))
+                document.getElementById("result").innerText = '-' + x;
+            else
+                document.getElementById("result").innerText = x.slice(1,x.length);
+        }
+        function getOperator(opt){
+            const x = document.getElementById("result").innerText;
+            if(firstHalf && operator && secondHalf){
+                firstHalf = parseFloat(x);
+                operator = opt;
+                console.log(firstHalf);
+                secondHalf = null;
+                switcher = true;
+
+                //for tracking purposes
+                updateOperationSoFar(); 
+                console.log(operationSoFar);
+                return;
+            }
+            if(firstHalf == null){
+                firstHalf = parseFloat(x);
+                secondHalf = null;
+                operator = opt;
+                console.log(firstHalf);
+                switcher = true;
+
+                //for tracking purposes
+                updateOperationSoFar(); 
+                console.log(operationSoFar);
+            }
+            else{
+                secondHalf = parseFloat(x); //get the second half of the function
+                const result = handleOperator(); 
+                document.getElementById("result").innerText = result;
+
+                firstHalf = parseFloat(result); //reset first half of the function to the new value
+                switcher = true;
+                operator = opt;
+
+                //for tracking purposes
+                updateOperationSoFar(); 
+                console.log(operationSoFar);
+            }
+        }
+        function handleOperator(){
+            switch(operator){
+                case "*":{
+                    const res = firstHalf * secondHalf;
+                    return res;
+                }
+                case "/":{
+                    const res = firstHalf / secondHalf;
+                    return res;
+                }
+                case "+":{
+                    const res = firstHalf + secondHalf;
+                    return res;
+                }
+                case "-":{
+                    const res = firstHalf - secondHalf;
+                    return res;
+                }
+                default:{
+                    console.log("Error while caluculating");
+                }
+                    
+            }
+        }
+        function getResult(){
+            const x = document.getElementById("result").innerText;
+            if(!(firstHalf || secondHalf || operator)){
+                switcher = true;
+
+                //for tracking purposes
+                updateOperationSoFar(); 
+                console.log(operationSoFar);
+                return;
+            }
+            if(!firstHalf && (secondHalf || operator)){
+                firstHalf = x;
+                const result = handleOperator();
+                document.getElementById("result").innerText = result;
+
+                firstHalf = null;
+                switcher = true;
+
+                //for tracking purposes
+                updateOperationSoFar(); 
+                console.log(operationSoFar);
+                return;
+            }
+            if(firstHalf && operator && !secondHalf){
+                secondHalf = x;
+                const result = handleOperator();
+                document.getElementById("result").innerText = result;
+                firstHalf = result;
+                switcher = true;
+
+                //for tracking purposes
+                updateOperationSoFar(); 
+                console.log(operationSoFar);
+                return;
+            }
+            if(firstHalf && operator && secondHalf){
+                const result = handleOperator();
+                document.getElementById("result").innerText = result;
+                firstHalf = result;
+                switcher = true;
+
+                //for tracking purposes
+                updateOperationSoFar(); 
+                console.log(operationSoFar);
+                return;
+            }
+        }
+    </script>
+</html>
