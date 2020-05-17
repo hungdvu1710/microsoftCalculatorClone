@@ -16,39 +16,39 @@
                 <h3 id="result">0</h3>
             </tr>
             <tr>
-                <td id="%" ><button onclick ="percent()">%</button></td>
+                <td id="%" ><button class="operations" onclick ="percent()">%</button></td>
                 <td id="CE"><button onclick = "CE()">CE</button></td>
                 <td id="C"><button onclick = "C()">C</button></td>
                 <td id="Delete"><button onclick="Delete()">X</button></td>
             </tr>
             <tr>
-                <td id="1/x"><button onclick="oneOverX()">1/x</button></td>
-                <td id="x^2"><button onclick="xSquare()">x^2</button></td>
-                <td id="sqrt(x)"><button onclick="sqrtX()">sqrt(x)</button></td>
-                <td id="/"><button onclick="getOperator('/')">/</button></td>
+                <td id="1/x"><button class="operations" onclick="oneOverX()">1/x</button></td>
+                <td id="x^2"><button class="operations" onclick="xSquare()">x^2</button></td>
+                <td id="sqrt(x)"><button class="operations" onclick="sqrtX()">sqrt(x)</button></td>
+                <td id="/"><button class="operations" onclick="getOperator('/')">/</button></td>
             </tr>
             <tr>
                 <td id ="7"><button onclick="num('7')">7</button></td>
                 <td id ="8"><button onclick="num('8')">8</button></td>
                 <td id ="9"><button onclick="num('9')">9</button></td>
-                <td id ="*"><button onclick="getOperator('*')">*</button></td>
+                <td id ="*"><button class="operations" onclick="getOperator('*')">*</button></td>
             </tr>
             <tr>
                 <td id ="4"><button onclick="num('4')">4</button></td>
                 <td id ="5"><button onclick="num('5')">5</button></td>
                 <td id ="6"><button onclick="num('6')">6</button></td>
-                <td id ="-"><button onclick="getOperator('-')">-</button></td>
+                <td id ="-"><button class="operations" onclick="getOperator('-')">-</button></td>
             </tr>
             <tr>
                 <td id ="1"><button onclick="num('1')">1</button></td>
                 <td id ="2"><button onclick="num('2')">2</button></td>
                 <td id ="3"><button onclick="num('3')">3</button></td>
-                <td id ="+"><button onclick="getOperator('+')">+</button></td>
+                <td id ="+"><button class="operations" onclick="getOperator('+')">+</button></td>
             </tr>
             <tr>
-                <td id ="+/-"><button onclick="sign()">+/-</button></td>
+                <td id ="+/-"><button onclick="sign()" class = "sign">+/-</button></td>
                 <td id ="0"><button onclick="num('0')">0</button></td>
-                <td id ="."><button onclick="decimalPoint()">.</button></td>
+                <td id ="."><button onclick="decimalPoint()" class = "decPoint">.</button></td>
                 <td id ="getResult"><button onclick="getResult()">=</button></td>
             </tr>
         </table>
@@ -59,7 +59,20 @@
         let secondHalf = null;
         let operationSoFar = null;
         let switcher = false; //boolean value to alert num to start getting new value instead of appending to old ones
-        
+        function disableButtons(but){
+            const button = document.getElementsByClassName(but);
+            for(let i =0; i<button.length;i++){
+                button[i].setAttribute("disabled",true);
+            }
+            console.log("button disabled");
+        }
+        function enableButtons(but){
+            const button = document.getElementsByClassName(but);
+            for(let i =0; i<button.length;i++){
+                button[i].disabled = false;
+            }
+            console.log("button enabled");
+        }
         function percent(){
             //TODO: implement percent
         }
@@ -68,7 +81,11 @@
             operationSoFar = "Current Operations: " + firstHalf + " " + operator + " " + secondHalf;
         }
         function num(input){
+            //always enable buttons when typing in new numbers
             const x = document.getElementById("result").innerText;
+            enableButtons("operations");
+            enableButtons("sign");
+            enableButtons("decPoints");
             if(switcher){
                 document.getElementById("result").innerText = input;
                 switcher = false;
@@ -85,13 +102,10 @@
         }
         function Delete(){
             const x = document.getElementById("result").innerText;
-            if(firstHalf || secondHalf || operator){
-                firstHalf = null;
-                operator = null;
-                secondHalf = null;
+            if(switcher){
                 return;
             }
-            if(x=="Invalid Input"){
+            if(isNaN(x) || x == Infinity){
                 C();
                 return;
             }
@@ -110,20 +124,35 @@
             document.getElementById("result").innerText = x**2;
         }
         function sqrtX(){
-            const x = document.getElementById("result").innerText;
+            const x = Number(document.getElementById("result").innerText);
             if(x<0){
                 document.getElementById("result").innerText = "Invalid Input";
+                disableButtons("operations");
+                disableButtons("decPoint");
+                disableButtons("sign");
                 return;
             }
             document.getElementById("result").innerText = Math.sqrt(x);
         }
         function C(){
+            //Ultimate delete button
+            //Under certain circumstances, other buttons might rely totally on this
+            //always enable other buttons when hitting C
             document.getElementById("result").innerText = 0;
             firstHalf = null;
             operator = null;
             secondHalf = null;
+            enableButtons("operations");
+            enableButtons("sign");
+            enableButtons("decPoints");
+            switcher = true;
         }
         function CE(){
+            const x = Number(document.getElementById("result").innerText);
+            if(isNaN(x) || x == Infinity){
+                C();
+                return;
+            }
             document.getElementById("result").innerText = 0;
             firstHalf = null;
         }
@@ -143,7 +172,7 @@
                 document.getElementById("result").innerText = x.slice(1,x.length);
         }
         function getOperator(opt){
-            const x = document.getElementById("result").innerText;
+            const x = Number(document.getElementById("result").innerText);
             if(firstHalf && operator && secondHalf){
                 firstHalf = parseFloat(x);
                 operator = opt;
@@ -169,7 +198,7 @@
             }
             else{
                 secondHalf = parseFloat(x); //get the second half of the function
-                const result = handleOperator(); 
+                const result = calculate(); 
                 document.getElementById("result").innerText = result;
 
                 firstHalf = parseFloat(result); //reset first half of the function to the new value
@@ -181,7 +210,8 @@
                 console.log(operationSoFar);
             }
         }
-        function handleOperator(){
+        function calculate(){
+            //
             switch(operator){
                 case "*":{
                     const res = firstHalf * secondHalf;
@@ -189,6 +219,11 @@
                 }
                 case "/":{
                     const res = firstHalf / secondHalf;
+                    if(res ===Infinity){
+                        disableButtons("operations");
+                        disableButtons("sign");
+                        disableButtons("decPoints");
+                    }
                     return res;
                 }
                 case "+":{
@@ -206,7 +241,12 @@
             }
         }
         function getResult(){
-            const x = document.getElementById("result").innerText;
+            const x = Number(document.getElementById("result").innerText);
+            console.log(x);
+            if(isNaN(x) || x === Infinity){
+                C();
+                return;
+            }
             if(!(firstHalf || secondHalf || operator)){
                 switcher = true;
 
@@ -217,7 +257,7 @@
             }
             if(!firstHalf && (secondHalf || operator)){
                 firstHalf = x;
-                const result = handleOperator();
+                const result = calculate();
                 document.getElementById("result").innerText = result;
 
                 firstHalf = null;
@@ -230,7 +270,7 @@
             }
             if(firstHalf && operator && !secondHalf){
                 secondHalf = x;
-                const result = handleOperator();
+                const result = calculate();
                 document.getElementById("result").innerText = result;
                 firstHalf = result;
                 switcher = true;
@@ -241,7 +281,7 @@
                 return;
             }
             if(firstHalf && operator && secondHalf){
-                const result = handleOperator();
+                const result = calculate();
                 document.getElementById("result").innerText = result;
                 firstHalf = result;
                 switcher = true;
