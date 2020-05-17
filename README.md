@@ -7,4 +7,5 @@
     * calculate()
     * getOperator(opt)
   - Ultimate Delete button: C() : Totally reset every variable (except switcher) to its initial state
+  *** updateOperationSoFar() doesn't work as expected.
 
